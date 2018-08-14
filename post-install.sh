@@ -253,5 +253,40 @@ ln -s /usr/share/munin/plugins/uptime /etc/munin/plugins/uptime
 ln -s /usr/share/munin/plugins/users /etc/munin/plugins/users
 ln -s /usr/share/munin/plugins/vmstat /etc/munin/plugins/vmstat
 
+
+## Add virtual host for munin
+
+cat > /etc/nginx/sites-enabled/munin <<EOF
+server {
+        root /var/cache/munin/www;
+        index index.html index.htm;
+
+        server_name $HOSTNAME www.$HOSTNAME;
+
+        location / {
+                try_files \$uri \$uri/ /index.html;
+                autoindex on;
+                allow all;
+                auth_basic "Restricted";
+                auth_basic_user_file /.htpasswd/munin;
+        }
+}
+
+server {
+  listen 80;
+  server_name localhost;
+  location /nginx_status {
+    stub_status on;
+    access_log off;
+    allow 127.0.0.1;
+    deny all;
+  }   
+}
+EOF
+
+## Restart nginx and munin
+/etc/init.d/nginx restart 
+/etc/init.d/munin-node restart
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
