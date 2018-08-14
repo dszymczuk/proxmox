@@ -202,6 +202,7 @@ EOF
 
 ## Install and set htpasswd
 apt-get -y install apache2-utils
+mkdir -p /.htpasswd
 htpasswd -b -c /.htpasswd/munin $MUNINUSER $MUNINPASS
 
 ## Munin instalation
