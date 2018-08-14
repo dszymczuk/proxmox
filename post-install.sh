@@ -200,5 +200,9 @@ cat << EOF >> /etc/crontab
 30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
 EOF
 
+## Install and set htpasswd
+apt-get -y install apache2-utils
+htpasswd -b -c /.htpasswd/munin $MUNINUSER $MUNINPASS
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
