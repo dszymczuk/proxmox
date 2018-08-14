@@ -288,5 +288,22 @@ EOF
 /etc/init.d/nginx restart 
 /etc/init.d/munin-node restart
 
+## Config .bashrc
+cat > /root/.bashrc <<EOF
+export LS_OPTIONS='--color=auto'
+eval "\`dircolors\`"
+alias ls='ls $LS_OPTIONS'
+
+# Some more alias to avoid making mistakes:
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+export PS1="\[\033[38;5;2m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;1m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] [\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]"
+EOF
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
