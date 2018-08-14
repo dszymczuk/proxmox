@@ -204,5 +204,53 @@ EOF
 apt-get -y install apache2-utils
 htpasswd -b -c /.htpasswd/munin $MUNINUSER $MUNINPASS
 
+## Munin instalation
+apt-get -y install munin munin-node munin-plugins-extra 
+
+cat > /etc/munin/munin.conf <<EOF
+dbdir /var/lib/munin
+htmldir /var/cache/munin/www
+logdir /var/log/munin
+rundir  /var/run/munin
+tmpldir /etc/munin/templates
+includedir /etc/munin/munin-conf.d
+
+
+[$HOSTNAME]
+  address 127.0.0.1
+  use_node_name yes
+EOF
+
+
+## Munin plugins
+## Show list
+## /usr/sbin/munin-node-configure --suggest
+## Enable
+## ln -s /usr/share/munin/plugins/cpuspeed /etc/munin/plugins/cpuspeed
+## Disable
+## rm /etc/munin/plugins/cpuspeed
+
+## Remove all plugins
+rm -rf /etc/munin/plugins/
+mkdir -p /etc/munin/plugins/
+
+## Enable plugin which I need
+ln -s /usr/share/munin/plugins/cpu /etc/munin/plugins/cpu
+ln -s /usr/share/munin/plugins/df /etc/munin/plugins/df
+ln -s /usr/share/munin/plugins/diskstats /etc/munin/plugins/diskstats
+ln -s /usr/share/munin/plugins/fail2ban /etc/munin/plugins/fail2ban
+ln -s /usr/share/munin/plugins/load /etc/munin/plugins/load
+ln -s /usr/share/munin/plugins/memory /etc/munin/plugins/memory
+ln -s /usr/share/munin/plugins/munin_stats /etc/munin/plugins/munin_stats
+ln -s /usr/share/munin/plugins/open_files /etc/munin/plugins/open_files
+ln -s /usr/share/munin/plugins/postfix_mailqueue /etc/munin/plugins/postfix_mailqueue
+ln -s /usr/share/munin/plugins/processes /etc/munin/plugins/processes
+ln -s /usr/share/munin/plugins/proc_pri /etc/munin/plugins/proc_pri
+ln -s /usr/share/munin/plugins/swap /etc/munin/plugins/swap
+ln -s /usr/share/munin/plugins/threads /etc/munin/plugins/threads
+ln -s /usr/share/munin/plugins/uptime /etc/munin/plugins/uptime
+ln -s /usr/share/munin/plugins/users /etc/munin/plugins/users
+ln -s /usr/share/munin/plugins/vmstat /etc/munin/plugins/vmstat
+
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
