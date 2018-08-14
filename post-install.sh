@@ -1,15 +1,17 @@
 #!/bin/bash
 
-################################################################################v
+################################################################################
 #
 #    original script:
 #    https://github.com/extremeshok/xshok-proxmox
 #
 ################################################################################
-#
-#    THERE ARE NO USER CONFIGURABLE OPTIONS IN THIS SCRIPT
-#
-################################################################################
+
+HOSTNAME=opteron.dszymczuk.pl
+HOSTIP=192.168.17.188
+MUNINUSER=munin
+MUNINPASS=damian
+
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
@@ -104,9 +106,14 @@ maxretry = 3
 # 1 hour
 bantime = 3600
 EOF
-systemctl enable fail2ban
 ## testing
 # fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
+
+# increase bantime
+sed -i "s/bantime  = 600/bantime  = 86400/g" /etc/fail2ban/jail.conf
+
+systemctl enable fail2ban
+
 
 ## Increase vzdump backup speed
 sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
@@ -163,6 +170,34 @@ EOF
 cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
+EOF
+
+
+## Increafe vzdump size
+cat <<'EOF' >> /etc/vzdump.conf
+
+#
+# increase snapshot memory
+# https://stackoverflow.com/questions/25449019/snapshot-backup-of-25gb-container-openvz-proxmox
+#
+size: 4096
+
+EOF
+
+
+################################################################################
+#
+# Server monitoring and another soft
+#
+################################################################################
+
+
+## Add SSL certificate
+apt-get install nginx certbot
+/etc/init.d/nginx stop
+certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
+cat << EOF >> /etc/crontab
+30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
 EOF
 
 ## Script Finish
