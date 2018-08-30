@@ -191,21 +191,18 @@ EOF
 #
 ################################################################################
 
+## Install nginx
+apt-get -y install nginx
 
-## Add SSL certificate
-apt-get install nginx certbot
-/etc/init.d/nginx stop
-certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
-cat << EOF >> /etc/crontab
-30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
-EOF
+## Remove default host
+rm -f /etc/nginx/sites-enabled/default
 
 ## Install and set htpasswd
 apt-get -y install apache2-utils
 mkdir -p /.htpasswd
 htpasswd -b -c /.htpasswd/munin $MUNINUSER $MUNINPASS
 
-## Munin instalation
+## Install munin
 apt-get -y install munin munin-node munin-plugins-extra 
 
 cat > /etc/munin/munin.conf <<EOF
@@ -240,9 +237,11 @@ ln -s /usr/share/munin/plugins/cpu /etc/munin/plugins/cpu
 ln -s /usr/share/munin/plugins/df /etc/munin/plugins/df
 ln -s /usr/share/munin/plugins/diskstats /etc/munin/plugins/diskstats
 ln -s /usr/share/munin/plugins/fail2ban /etc/munin/plugins/fail2ban
+ln -s /usr/share/munin/plugins/hddtemp_smartctl /etc/munin/plugins/hddtemp_smartctl
 ln -s /usr/share/munin/plugins/load /etc/munin/plugins/load
 ln -s /usr/share/munin/plugins/memory /etc/munin/plugins/memory
 ln -s /usr/share/munin/plugins/munin_stats /etc/munin/plugins/munin_stats
+ln -s /usr/share/munin/plugins/nfs_client /etc/munin/plugins/nfs_client
 ln -s /usr/share/munin/plugins/open_files /etc/munin/plugins/open_files
 ln -s /usr/share/munin/plugins/postfix_mailqueue /etc/munin/plugins/postfix_mailqueue
 ln -s /usr/share/munin/plugins/processes /etc/munin/plugins/processes
@@ -261,7 +260,7 @@ server {
         root /var/cache/munin/www;
         index index.html index.htm;
 
-        server_name $HOSTNAME www.$HOSTNAME;
+        # server_name $HOSTNAME www.$HOSTNAME;
 
         location / {
                 try_files \$uri \$uri/ /index.html;
@@ -284,6 +283,14 @@ server {
 }
 EOF
 
+## Add SSL certificate
+# apt-get install certbot
+# /etc/init.d/nginx stop
+# certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
+# cat << EOF >> /etc/crontab
+# 30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
+# EOF
+
 ## Restart nginx and munin
 /etc/init.d/nginx restart 
 /etc/init.d/munin-node restart
@@ -302,7 +309,7 @@ alias mv='mv -i'
 HISTSIZE=1000
 HISTFILESIZE=2000
 
-export PS1="\[\033[38;5;2m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;1m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] [\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]"
+export PS1="\[\033[38;5;2m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;226m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] [\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]"
 EOF
 
 ## Script Finish
