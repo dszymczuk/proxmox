@@ -8,7 +8,7 @@
 ################################################################################
 
 HOSTNAME=opteron.dszymczuk.pl
-HOSTIP=192.168.17.188
+HOSTIP=151.80.34.71
 MUNINUSER=munin
 MUNINPASS=damian
 
