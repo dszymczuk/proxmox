@@ -119,8 +119,8 @@ systemctl enable fail2ban
 sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
- echo "vm.swappiness=10" >> /etc/sysctl.conf
- sysctl -p
+echo "vm.swappiness=10" >> /etc/sysctl.conf
+sysctl -p
 
 ## Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
