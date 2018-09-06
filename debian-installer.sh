@@ -2,6 +2,13 @@
 
 
 ## Manually: 
+
+# nano /etc/default/grub
+
+# GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"
+
+# grub-mkconfig -o /boot/grub/grub.cfg
+
 # cat > /etc/network/interfaces <<EOF
 # # The loopback network interface
 # # auto lo
@@ -17,6 +24,12 @@
 # # 	pre-down ip route del 151.80.34.254 dev eth0
 # # 	pre-down ip route del default via 151.80.34.254
 # EOF
+
+# nano /etc/resolv.conf
+
+# nameserver 213.186.33.99
+
+# reboot
 
 
 # apt-get -y install ssh openssh-server
@@ -158,67 +171,6 @@ sed -i "s/#ALLOW_SSH_ROOT_USER=no/ALLOW_SSH_ROOT_USER=yes/g" /etc/rkhunter.conf
 ## rkhunter -c -sk
 
 # Config .bashrc
-cat > /root/.bashrc <<EOF
-export LS_OPTIONS='--color=auto'
-eval "\`dircolors\`"
-alias ls='ls $LS_OPTIONS'
-
-# Some more alias to avoid making mistakes:
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-
-HISTSIZE=1000
-HISTFILESIZE=2000
-
-alias dockerCleanExited='docker rm $(docker ps --all -q -f status=exited)'
-alias dockerStopAll='docker stop $(docker ps -q)'
-alias dockerStartAll='docker start $(docker ps --all -q -f status=exited)'
-alias dockerRemoveUntaggedImage='docker rmi $(docker images -q -f dangling=true)'
-alias dockerRemoveDanglingVolumes='docker volume rm $(docker volume ls -qf dangling=true)'
-
-export PS1="\[\033[38;5;10m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;11m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] [\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]"
-EOF
-
-## Script Finish
-echo -e '\033[1;33m Finished....please restart the system \033[0m'
-
-
-# apt-get install -y whois wget nano net-tools htop iptraf iotop iftop iperf screen unzip zip software-properties-common curl dialog mlocate build-essential git
-
-
-
-
-#------------------------------------------------------------------------------#
-#                   OFFICIAL DEBIAN REPOS
-#------------------------------------------------------------------------------#
-
-###### Debian Main Repos
-deb http://deb.debian.org/debian/ stable main contrib non-free
-
-deb http://deb.debian.org/debian/ stable-updates main contrib non-free
-
-deb http://deb.debian.org/debian-security stable/updates main
-
-deb http://ftp.debian.org/debian stretch-backports main
-
-#------------------------------------------------------------------------------#
-#                      UNOFFICIAL  REPOS
-#------------------------------------------------------------------------------#
-
-###### 3rd Party Binary Repos
-###Docker CE
-deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
-
-
-## Docker install
-
-
-## Dcoker Compose install
-
-
-
-## Config .bashrc
 cat > /root/.bashrc <<EOF
 export LS_OPTIONS='--color=auto'
 eval "\`dircolors\`"
