@@ -32,7 +32,7 @@
 # reboot
 
 
-# apt-get -y install ssh openssh-server
+# apt-get -y install openssh-server
 # nano /etc/ssh/shhd_config
 
 ## uncomment Port
@@ -165,7 +165,7 @@ EOF
 apt-get install -y rkhunter
 
 sed -i "s/#ALLOW_SSH_ROOT_USER=no/ALLOW_SSH_ROOT_USER=yes/g" /etc/rkhunter.conf
-# sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkhunter.conf
+sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkhunter.conf
 ## rkhunter --versioncheck
 ## rkhunter --update
 ## rkhunter -c -sk
@@ -178,8 +178,8 @@ alias ls='ls $LS_OPTIONS'
 
 # Some more alias to avoid making mistakes:
 alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
+# alias cp='cp -i'
+# alias mv='mv -i'
 
 HISTSIZE=1000
 HISTFILESIZE=2000
