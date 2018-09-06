@@ -12,10 +12,10 @@
 # # 	address HOSTIP
 # # 	netmask 255.255.255.255
 # # 	broadcast HOSTIP
-# # 	post-up ip route add 151.80.34.71 dev eth0
-# # 	post-up ip route add default via 151.80.34.71
-# # 	pre-down ip route del 151.80.34.71 dev eth0
-# # 	pre-down ip route del default via 151.80.34.71
+# # 	post-up ip route add 151.80.34.254 dev eth0
+# # 	post-up ip route add default via 151.80.34.254
+# # 	pre-down ip route del 151.80.34.254 dev eth0
+# # 	pre-down ip route del default via 151.80.34.254
 # EOF
 
 
