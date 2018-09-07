@@ -42,6 +42,8 @@
 
 ## End of Manually
 
+echo -e '\033[1;32m DEBIAN instalation... \033[0m'
+
 cat > /etc/apt/sources.list <<EOF
 #------------------------------------------------------------------------------#
 #                   OFFICIAL DEBIAN REPOS
@@ -65,12 +67,17 @@ echo "vm.swappiness=10" >> /etc/sysctl.conf
 sysctl -p
 
 ## Docker pre-install
+
+echo -e '\033[1;32m Software instalation... \033[0m'
+
 apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common openssh-server
 
 sed -i "s/#PermitRootLogin prohibit-password/PermitRootLogin yes/g" /etc/ssh/sshd_config
 
 
 apt-get install -y whois wget nano net-tools htop iptraf iotop iftop iperf screen unzip zip curl dialog mlocate build-essential git
+
+echo -e '\033[1;32m Setup time... \033[0m'
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone Europe/Warsaw
@@ -84,6 +91,8 @@ PollIntervalMaxSec=2048
 EOF
 service systemd-timesyncd start
 timedatectl set-ntp true
+
+echo -e '\033[1;96m Docker instalation... \033[0m'
 
 ### Append Docker sources
 cat >> /etc/apt/sources.list <<EOF
@@ -110,10 +119,13 @@ apt-get install -y docker-ce
 curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
+echo -e '\033[1;32m Fail2ban instalation... \033[0m'
 
 ## Install fail2ban
 apt-get install -y fail2ban
 sed -i "s/bantime  = 600/bantime  = 86400/g" /etc/fail2ban/jail.conf
+
+echo -e '\033[1;32m Munin with plugins instalation... \033[0m'
 
 ## Install munin
 apt-get -y install munin-node munin-plugins-extra
@@ -170,6 +182,8 @@ EOF
 
 /etc/init.d/munin-node restart
 
+echo -e '\033[1;32m Rkhunter instalation... \033[0m'
+
 # Install rkhunter
 apt-get install -y rkhunter
 
@@ -178,6 +192,8 @@ sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkh
 ## rkhunter --versioncheck
 ## rkhunter --update
 ## rkhunter -c -sk
+
+echo -e '\033[1;32m .bashrc configuration \033[0m'
 
 # Config .bashrc
 cat > /root/.bashrc <<EOF
