@@ -56,13 +56,6 @@ deb http://deb.debian.org/debian-security stable/updates main
 
 deb http://ftp.debian.org/debian stretch-backports main
 
-#------------------------------------------------------------------------------#
-#                      UNOFFICIAL  REPOS
-#------------------------------------------------------------------------------#
-
-###### 3rd Party Binary Repos
-###Docker CE
-deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
 EOF
 
 apt-get update -y
@@ -91,7 +84,21 @@ PollIntervalMinSec=32
 PollIntervalMaxSec=2048
 EOF
 service systemd-timesyncd start
-timedatectl set-ntp true 
+timedatectl set-ntp true
+
+### Append extra sources
+cat >> /etc/apt/sources.list <<EOF
+
+#------------------------------------------------------------------------------#
+#                      UNOFFICIAL  REPOS
+#------------------------------------------------------------------------------#
+
+###### 3rd Party Binary Repos
+###Docker CE
+deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+EOF
+
+apt-get update -y
 
 ## Docker install
 curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
