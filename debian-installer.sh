@@ -86,7 +86,7 @@ EOF
 service systemd-timesyncd start
 timedatectl set-ntp true
 
-### Append extra sources
+### Append Docker sources
 cat >> /etc/apt/sources.list <<EOF
 
 #------------------------------------------------------------------------------#
