@@ -73,9 +73,12 @@ sysctl -p
 
 ## Docker pre-install
 apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+apt-get install -y openssh-server
+
+sed -i "s/#PermitRootLogin prohibit-password/PermitRootLogin yes/g" /etc/ssh/sshd_config
 
 
-apt-get install -y whois wget nano net-tools htop iptraf iotop iftop iperf screen unzip zip software-properties-common curl dialog mlocate build-essential git
+apt-get install -y whois wget nano net-tools htop iptraf iotop iftop iperf screen unzip zip curl dialog mlocate build-essential git
 
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone Europe/Warsaw
