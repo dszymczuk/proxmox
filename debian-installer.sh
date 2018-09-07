@@ -65,8 +65,7 @@ echo "vm.swappiness=10" >> /etc/sysctl.conf
 sysctl -p
 
 ## Docker pre-install
-apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-apt-get install -y openssh-server
+apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common openssh-server
 
 sed -i "s/#PermitRootLogin prohibit-password/PermitRootLogin yes/g" /etc/ssh/sshd_config
 
