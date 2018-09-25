@@ -11,6 +11,7 @@ HOSTNAME=opteron.dszymczuk.pl
 HOSTIP=151.80.34.71
 MUNINUSER=munin
 MUNINPASS=damian
+ENABLE_SSL=yes
 
 
 ## disable enterprise proxmox repo
@@ -283,13 +284,20 @@ server {
 }
 EOF
 
+
+if [ $ENABLE_SSL = "yes" ]; then
 ## Add SSL certificate
-# apt-get install certbot
-# /etc/init.d/nginx stop
-# certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
-# cat << EOF >> /etc/crontab
-# 30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
-# EOF
+apt-get install certbot
+/etc/init.d/nginx stop
+certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
+cat << EOF >> /etc/crontab
+30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
+EOF
+else
+  echo "NO SSL"
+fi
+
+
 
 ## Restart nginx and munin
 /etc/init.d/nginx restart 
