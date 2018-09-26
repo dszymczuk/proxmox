@@ -206,8 +206,8 @@ alias rm='rm -i'
 # alias cp='cp -i'
 # alias mv='mv -i'
 
-HISTSIZE=1000
-HISTFILESIZE=2000
+HISTSIZE=2000
+HISTFILESIZE=5000
 
 alias dockerCleanExited='docker rm $(docker ps --all -q -f status=exited)'
 alias dockerStopAll='docker stop $(docker ps -q)'
