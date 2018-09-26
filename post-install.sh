@@ -285,19 +285,29 @@ server {
 EOF
 
 
-if [ $ENABLE_SSL = "yes" ]; then
 ## Add SSL certificate
 apt-get install certbot
 /etc/init.d/nginx stop
 certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
+
+cp /etc/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/pve/local/pveproxy-ssl.pem
+cp /etc/letsencrypt/live/$HOSTNAME/privkey.pem /etc/pve/local/pveproxy-ssl.key
+
+cat > /usr/local/bin/renew-pve-certs.sh <<EOF
+cp /etc/letsencrypt/live/$HOSTNAME/fullchain.pem /etc/pve/local/pveproxy-ssl.pem
+cp /etc/letsencrypt/live/$HOSTNAME/privkey.pem /etc/pve/local/pveproxy-ssl.key
+
+systemctl restart pveproxy
+EOF
+
+chmod +x /usr/local/bin/renew-pve-certs.sh
+
+
 cat << EOF >> /etc/crontab
 30 6 1,15 * * root /usr/bin/certbot renew --quiet --post-hook /usr/local/bin/renew-pve-certs.sh
 EOF
-else
-  echo "NO SSL"
-fi
 
-
+systemctl restart pveproxy
 
 ## Restart nginx and munin
 /etc/init.d/nginx restart 
