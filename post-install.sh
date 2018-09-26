@@ -261,7 +261,7 @@ server {
         root /var/cache/munin/www;
         index index.html index.htm;
 
-        # server_name $HOSTNAME www.$HOSTNAME;
+        server_name $HOSTNAME www.$HOSTNAME;
 
         location / {
                 try_files \$uri \$uri/ /index.html;
