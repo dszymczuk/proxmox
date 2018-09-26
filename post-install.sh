@@ -11,8 +11,6 @@ HOSTNAME=opteron.dszymczuk.pl
 HOSTIP=151.80.34.71
 MUNINUSER=munin
 MUNINPASS=damian
-ENABLE_SSL=yes
-
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
