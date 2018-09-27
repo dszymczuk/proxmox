@@ -284,7 +284,7 @@ EOF
 
 
 ## Add SSL certificate
-apt-get install certbot
+apt-get install -y certbot
 /etc/init.d/nginx stop
 certbot --register-unsafely-without-email -n --standalone --agree-tos -d $HOSTNAME certonly
 
