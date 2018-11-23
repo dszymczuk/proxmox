@@ -7,10 +7,13 @@
 #
 ################################################################################
 
-HOSTNAME=opteron.dszymczuk.pl
-HOSTIP=151.80.34.71
+HOSTNAME=intel.dszymczuk.pl
+HOSTIP=46.105.102.152
 MUNINUSER=munin
 MUNINPASS=damian
+
+export LANG="pl_PL.UTF-8"
+export LC_ALL="pl_PL.UTF-8"
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
