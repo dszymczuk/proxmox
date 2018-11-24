@@ -262,7 +262,7 @@ server {
   server_name $HOSTNAME www.$HOSTNAME;
   listen 80 ;
   access_log /var/log/nginx/access.log;
-  return 301 https://$host$request_uri;
+  return 301 https://\$host\$request_uri;
 }
 
 server {
@@ -280,7 +280,7 @@ server {
         index index.html index.htm;
 
   location / {
-                try_files $uri $uri/ /index.html;
+                try_files \$uri \$uri/ /index.html;
                 autoindex on;
                 allow all;
                 auth_basic "Restricted";
