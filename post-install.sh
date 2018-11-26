@@ -174,6 +174,10 @@ kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
 
+## install pigz
+## https://blog.kowalsio.com/2018/04/23/przyspieszanie-backupu-maszyn-wirtualnych-w-proxmox-ve-kompresja-przy-pomocy-pigz/
+
+apt-get -y install pigz
 
 ## Increafe vzdump size
 cat <<'EOF' >> /etc/vzdump.conf
@@ -183,6 +187,7 @@ cat <<'EOF' >> /etc/vzdump.conf
 # https://stackoverflow.com/questions/25449019/snapshot-backup-of-25gb-container-openvz-proxmox
 #
 size: 4096
+pigz: 1
 
 EOF
 
