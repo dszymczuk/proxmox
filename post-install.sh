@@ -7,8 +7,8 @@
 #
 ################################################################################
 
-HOSTNAME=intel.dszymczuk.pl
-HOSTIP=46.105.102.152
+HOSTNAME=ssd.dszymczuk.pl
+HOSTIP=91.121.70.105
 MUNINUSER=munin
 MUNINPASS=damian
 
