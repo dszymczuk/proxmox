@@ -50,13 +50,14 @@ cat > /etc/apt/sources.list <<EOF
 #------------------------------------------------------------------------------#
 
 ###### Debian Main Repos
-deb http://deb.debian.org/debian/ stable main contrib non-free
+deb http://deb.debian.org/debian/ buster main contrib non-free
 
-deb http://deb.debian.org/debian/ stable-updates main contrib non-free
+deb http://deb.debian.org/debian/ buster-updates main contrib non-free
 
-deb http://deb.debian.org/debian-security stable/updates main
+deb http://deb.debian.org/debian-security buster/updates main
 
-deb http://ftp.debian.org/debian stretch-backports main
+deb http://ftp.debian.org/debian buster-backports main
+
 
 EOF
 
@@ -103,7 +104,7 @@ cat >> /etc/apt/sources.list <<EOF
 
 ###### 3rd Party Binary Repos
 ###Docker CE
-deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+deb [arch=amd64] https://download.docker.com/linux/debian buster stable
 EOF
 
 apt-get update -y
