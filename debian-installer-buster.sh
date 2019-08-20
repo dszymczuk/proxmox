@@ -50,14 +50,55 @@ cat > /etc/apt/sources.list <<EOF
 #------------------------------------------------------------------------------#
 
 ###### Debian Main Repos
-deb http://deb.debian.org/debian/ stable main contrib non-free
+deb http://deb.debian.org/debian/ buster main contrib non-free
 
-deb http://deb.debian.org/debian/ stable-updates main contrib non-free
+deb http://deb.debian.org/debian/ buster-updates main contrib non-free
 
-deb http://deb.debian.org/debian-security stable/updates main
+deb http://deb.debian.org/debian-security buster/updates main
 
-deb http://ftp.debian.org/debian stretch-backports main
+deb http://ftp.debian.org/debian buster-backports main
 
+
+EOF
+
+cat > /etc/apt/stable.list <<EOF
+#------------------------------------------------------------------------------#
+#                   OFFICIAL DEBIAN REPOS STABLE
+#------------------------------------------------------------------------------#
+
+###### Debian Main Repos
+deb http://deb.debian.org/debian/ buster main contrib non-free
+
+deb http://deb.debian.org/debian/ buster-updates main contrib non-free
+
+deb http://deb.debian.org/debian-security buster/updates main
+
+deb http://ftp.debian.org/debian buster-backports main
+
+
+EOF
+
+cat > /etc/apt/testing.list <<EOF
+#------------------------------------------------------------------------------#
+#                   OFFICIAL DEBIAN REPOS TESTING
+#------------------------------------------------------------------------------#
+
+###### Debian Main Repos
+deb http://deb.debian.org/debian/ buster main contrib non-free
+
+deb http://deb.debian.org/debian/ buster-updates main contrib non-free
+
+deb http://deb.debian.org/debian-security buster/updates main
+
+deb http://ftp.debian.org/debian buster-backports main
+
+
+EOF
+
+
+# use stable as default release
+cat >> /etc/apt/apt.conf.d/99defaultrelease <<EOF
+APT::Default-Release "stable";
 EOF
 
 apt-get update -y
@@ -103,7 +144,7 @@ cat >> /etc/apt/sources.list <<EOF
 
 ###### 3rd Party Binary Repos
 ###Docker CE
-deb [arch=amd64] https://download.docker.com/linux/debian stretch stable
+deb [arch=amd64] https://download.docker.com/linux/debian buster stable
 EOF
 
 apt-get update -y
@@ -126,7 +167,7 @@ chmod +x /usr/local/bin/docker-compose
 echo -e '\033[1;32m Fail2ban instalation... \033[0m'
 
 ## Install fail2ban
-apt-get install -y fail2ban
+apt-get -t testing install fail2ban
 sed -i "s/bantime  = 600/bantime  = 86400/g" /etc/fail2ban/jail.conf
 
 echo -e '\033[1;32m Munin with plugins instalation... \033[0m'
