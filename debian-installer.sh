@@ -181,7 +181,7 @@ ln -s /usr/local/munin/lib/plugins/docker_memory /etc/munin/plugins/docker_memor
 
 cat >> /etc/munin/munin-node.conf <<EOF
 
-allow ^151\.80\.34\.71$
+allow ^46\.105\.102\.152$
 EOF
 
 /etc/init.d/munin-node restart
