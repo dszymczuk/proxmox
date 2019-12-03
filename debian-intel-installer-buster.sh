@@ -29,6 +29,10 @@
 
 # nameserver 213.186.33.99
 
+# hostnamectl set-hostname HOST_NAME
+
+# add hostname to /etc/hosts to 127.0.0.1 
+
 # reboot
 
 
@@ -231,6 +235,12 @@ echo -e '\033[1;32m Rkhunter instalation... \033[0m'
 
 # Install rkhunter
 apt-get install -y rkhunter
+
+# Install Proxmox QEMU Agent
+apt-get install qemu-guest-agent
+
+# Install acpid for shutdown
+apt-get install acpid
 
 sed -i "s/#ALLOW_SSH_ROOT_USER=no/ALLOW_SSH_ROOT_USER=yes/g" /etc/rkhunter.conf
 sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkhunter.conf

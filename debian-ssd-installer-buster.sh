@@ -29,6 +29,10 @@
 
 # nameserver 213.186.33.99
 
+# hostnamectl set-hostname HOST_NAME
+
+# add hostname to /etc/hosts to 127.0.0.1 
+
 # reboot
 
 
@@ -237,6 +241,12 @@ sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkh
 ## rkhunter --versioncheck
 ## rkhunter --update
 ## rkhunter -c -sk
+
+# Install Proxmox QEMU Agent
+apt-get install qemu-guest-agent
+
+# Install acpid for shutdown
+apt-get install acpid
 
 echo -e '\033[1;32m .bashrc configuration \033[0m'
 
