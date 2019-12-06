@@ -7,7 +7,7 @@
 #
 ################################################################################
 
-HOSTNAME=ssdhdd.dszymczuk.pl
+HOSTNAME=dwsrv.dszymczuk.pl
 HOSTIP=94.23.59.119
 MUNINUSER=munin
 MUNINPASS=damian
@@ -52,7 +52,7 @@ systemctl enable ksmtuned
 # echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois wget nano net-tools htop iptraf iotop iftop iperf screen unzip zip software-properties-common curl dialog mlocate build-essential git
+apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
 
 ## Detect AMD EPYC CPU and install kernel 4.15
 if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
@@ -71,6 +71,10 @@ fi
 apt-get autoremove -y
 apt-get autoclean -y
 
+## Disable portmapper / rpcbind (security)	
+systemctl disable rpcbind	
+systemctl stop rpcbind
+
 ## Set Timezone to UTC and enable NTP
 timedatectl set-timezone Europe/Warsaw
 echo > /etc/systemd/timesyncd.conf <<EOF
@@ -84,21 +88,34 @@ EOF
 service systemd-timesyncd start
 timedatectl set-ntp true 
 
+## Set pigz to replace gzip, 2x faster gzip compression
+cat  <<EOF > /bin/pigzwrapper
+#!/bin/sh
+PATH=/bin:\$PATH
+GZIP="-1"
+exec /usr/bin/pigz "\$@"
+EOF
+mv -f /bin/gzip /bin/gzip.original
+cp -f /bin/pigzwrapper /bin/gzip
+chmod +x /bin/pigzwrapper
+chmod +x /bin/gzip
+
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
 if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
-	echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
-	#http://help.ovh.co.uk/RealTimeMonitoring
-	wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+  echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
+  #http://help.ovh.co.uk/RealTimeMonitoring
+  wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
 fi
 
 ## Protect the web interface with fail2ban
-apt-get install -y fail2ban
-cat > /etc/fail2ban/filter.d/proxmox.conf <<EOF
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install fail2ban
+# shellcheck disable=1117
+cat <<EOF > /etc/fail2ban/filter.d/proxmox.conf
 [Definition]
 failregex = pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
 ignoreregex =
 EOF
-cat > /etc/fail2ban/jail.d/proxmox <<EOF
+cat <<EOF > /etc/fail2ban/jail.d/proxmox.conf
 [proxmox]
 enabled = true
 port = https,http,8006
@@ -106,32 +123,41 @@ filter = proxmox
 logpath = /var/log/daemon.log
 maxretry = 3
 # 1 hour
-bantime = 3600
+bantime = 86400
 EOF
-## testing
-# fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
-
-# increase bantime
+cat <<EOF > /etc/fail2ban/jail.local
+[DEFAULT]
+banaction = iptables-ipset-proto4
+EOF
 sed -i "s/bantime  = 600/bantime  = 86400/g" /etc/fail2ban/jail.conf
-
 systemctl enable fail2ban
+##testing
+#fail2ban-regex /var/log/daemon.log /etc/fail2ban/filter.d/proxmox.conf
 
-
-## Increase vzdump backup speed
-sed -i "s/#bwlimit: KBPS/bwlimit: 10240000/" /etc/vzdump.conf
+## Increase vzdump backup speed, enable pigz and fix ionice
+sed -i "s/#bwlimit:.*/bwlimit: 0/" /etc/vzdump.conf
+sed -i "s/#pigz:.*/pigz: 1/" /etc/vzdump.conf
+sed -i "s/#ionice:.*/ionice: 5/" /etc/vzdump.conf
 
 ## Bugfix: pve 5.1 high swap usage with low memory usage
 echo "vm.swappiness=10" >> /etc/sysctl.conf
 sysctl -p
 
+## Bugfix: reserve 512MB memory for system
+echo "vm.min_free_kbytes = 524288" >> /etc/sysctl.conf
+sysctl -p
+
 ## Remove subscription banner
-sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-# create a daily cron to make sure the banner does not re-appear
-cat > /etc/cron.daily/proxmox-nosub <<EOF
+if [ -f "/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js" ] ; then
+  sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+  # create a daily cron to make sure the banner does not re-appear
+  cat <<'EOF' > /etc/cron.daily/proxmox-nosub
 #!/bin/sh
+# eXtremeSHOK.com Remove subscription banner
 sed -i "s/data.status !== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 EOF
-chmod 755 /etc/cron.daily/proxmox-nosub
+  chmod 755 /etc/cron.daily/proxmox-nosub
+fi
 
 ## Pretty MOTD
 if ! grep -q https "/etc/motd" ; then
@@ -157,27 +183,26 @@ echo "fs.inotify.max_user_watches=1048576" >> /etc/sysctl.conf
 sysctl -p /etc/sysctl.conf
 
 ## Increase max FD limit / ulimit
-cat <<'EOF' >> /etc/security/limits.conf
-* soft     nproc          131072
-* hard     nproc          131072
-* soft     nofile         131072
-* hard     nofile         131072
-root soft     nproc          131072
-root hard     nproc          131072
-root soft     nofile         131072
-root hard     nofile         131072
+cat <<EOF >> /etc/security/limits.conf
+# eXtremeSHOK.com Increase max FD limit / ulimit
+* soft     nproc          256000
+* hard     nproc          256000
+* soft     nofile         256000
+* hard     nofile         256000
+root soft     nproc          256000
+root hard     nproc          256000
+root soft     nofile         256000
+root hard     nofile         256000
 EOF
 
 ## Increase kernel max Key limit
-cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
+cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
+# eXtremeSHOK.com
+# Increase kernel max Key limit
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
 
-## install pigz
-## https://blog.kowalsio.com/2018/04/23/przyspieszanie-backupu-maszyn-wirtualnych-w-proxmox-ve-kompresja-przy-pomocy-pigz/
-
-apt-get -y install pigz
 
 ## Increafe vzdump size
 cat <<'EOF' >> /etc/vzdump.conf
