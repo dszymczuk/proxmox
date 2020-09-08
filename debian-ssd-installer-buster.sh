@@ -165,13 +165,13 @@ groupadd docker
 usermod -aG docker damian
 
 ## Docker compose install
-curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 
 echo -e '\033[1;32m Fail2ban instalation... \033[0m'
 
 ## Install fail2ban
-apt-get -t testing install fail2ban
+apt-get -y install fail2ban
 sed -i "s/bantime  = 600/bantime  = 86400/g" /etc/fail2ban/jail.conf
 
 echo -e '\033[1;32m Munin with plugins instalation... \033[0m'
@@ -243,15 +243,38 @@ sed -i "s/#MAIL-ON-WARNING=root/MAIL-ON-WARNING=opteron@dszymczuk.pl/g" /etc/rkh
 ## rkhunter -c -sk
 
 # Install Proxmox QEMU Agent
-apt-get install qemu-guest-agent
+apt-get install -y qemu-guest-agent
 
 # Install acpid for shutdown
-apt-get install acpid
+apt-get install -y acpid
 
 echo -e '\033[1;32m .bashrc configuration \033[0m'
 
 # Config .bashrc
 cat > /root/.bashrc <<EOF
+export LS_OPTIONS='--color=auto'
+eval "\`dircolors\`"
+alias ls='ls $LS_OPTIONS'
+
+# Some more alias to avoid making mistakes:
+alias rm='rm -i'
+# alias cp='cp -i'
+# alias mv='mv -i'
+
+HISTSIZE=2000
+HISTFILESIZE=5000
+
+alias dockerCleanExited='docker rm $(docker ps --all -q -f status=exited)'
+alias dockerStopAll='docker stop $(docker ps -q)'
+alias dockerStartAll='docker start $(docker ps --all -q -f status=exited)'
+alias dockerRemoveUntaggedImage='docker rmi $(docker images -q -f dangling=true)'
+alias dockerRemoveDanglingVolumes='docker volume rm $(docker volume ls -qf dangling=true)'
+
+export PS1="\[\033[38;5;10m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;11m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] [\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]"
+EOF
+
+# Config .bashrc
+cat > /home/damian/.bashrc <<EOF
 export LS_OPTIONS='--color=auto'
 eval "\`dircolors\`"
 alias ls='ls $LS_OPTIONS'
