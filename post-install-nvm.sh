@@ -17,59 +17,64 @@ export LC_ALL="pl_PL.UTF-8"
 
 ## disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
-	echo -e "#deb https://enterprise.proxmox.com/debian stretch pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
+	echo -e "#deb https://enterprise.proxmox.com/debian buster pve-enterprise\n" > /etc/apt/sources.list.d/pve-enterprise.list
 fi
 ## enable public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
-	echo -e "deb http://download.proxmox.com/debian stretch pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
+	echo -e "deb http://download.proxmox.com/debian buster pve-no-subscription\n" > /etc/apt/sources.list.d/pve-public-repo.list
 fi
 
 ## Add non-free to sources
 sed -i "s/main contrib/main non-free contrib/g" /etc/apt/sources.list
 
 ## Install the latest ceph provided by proxmox
-echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://download.proxmox.com/debian/ceph-luminous buster main" > /etc/apt/sources.list.d/ceph.list
 
 ## Refresh the package lists
-apt-get update
+apt-get update > /dev/null
 
-# ## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+## Remove conflicting utilities
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' purge ntp openntpd chrony ksm-control-daemon
 
-# ## Update proxmox and install various system utils
-apt-get -y dist-upgrade --force-yes
+## Fix no public key error for debian repo
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
+
+## Update proxmox and install various system utils
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' dist-upgrade
 pveam update
 
 # ## Fix no public key error for debian repo
-apt-get install -y debian-archive-keyring
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install debian-archive-keyring
 
 
 # ## Install missing ksmtuned
-apt-get install -y ksmtuned
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install ksmtuned
 systemctl enable ksmtuned
+systemctl enable ksm
 
 # Install ceph support
 # echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git ipset
+
 
 ## Detect AMD EPYC CPU and install kernel 4.15
-if [ "$(cat /proc/cpuinfo | grep -i -m 1 "model name" | grep -i "EPYC")" != "" ]; then
+if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
   #Apply EPYC fix to kernel : Fixes random crashing and instability
-  if ! cat /etc/default/grub | grep "GRUB_CMDLINE_LINUX_DEFAULT" | grep -q "idle=nomwait" ; then
+  if ! grep "GRUB_CMDLINE_LINUX_DEFAULT" /etc/default/grub | grep -q "idle=nomwait" ; then
     echo "Setting kernel idle=nomwait"
     sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="/GRUB_CMDLINE_LINUX_DEFAULT="idle=nomwait /g' /etc/default/grub
     update-grub
   fi
   echo "Installing kernel 4.15"
-  apt-get install -y pve-kernel-4.15
+  /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-4.15
 fi
 
 ## Remove no longer required packages and purge old cached updates
-apt-get autoremove -y
-apt-get autoclean -y
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoremove
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' autoclean
 
 ## Disable portmapper / rpcbind (security)	
 systemctl disable rpcbind	
@@ -104,7 +109,8 @@ chmod +x /bin/gzip
 if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
   echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
   #http://help.ovh.co.uk/RealTimeMonitoring
-  wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+  #wget ftp://ftp.ovh.net/made-in-ovh/rtm/install_rtm.sh -c -O install_rtm.sh && bash install_rtm.sh && rm install_rtm.sh
+  wget -qO - https://last-public-ovh-infra-yak.snap.mirrors.ovh.net/yak/archives/apply.sh | OVH_PUPPET_MANIFEST=distribyak/catalog/master/puppet/manifests/common/rtmv2.pp bash
 fi
 
 ## Protect the web interface with fail2ban
@@ -195,6 +201,14 @@ root soft     nofile         256000
 root hard     nofile         256000
 EOF
 
+## Enable TCP BBR congestion control
+cat <<EOF > /etc/sysctl.d/10-kernel-bbr.conf
+# eXtremeSHOK.com
+# TCP BBR congestion control
+net.core.default_qdisc=fq
+net.ipv4.tcp_congestion_control=bbr
+EOF
+
 ## Increase kernel max Key limit
 cat <<EOF > /etc/sysctl.d/60-maxkeys.conf
 # eXtremeSHOK.com
@@ -203,8 +217,18 @@ kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
 
+## Set systemd ulimits
+echo "DefaultLimitNOFILE=256000" >> /etc/systemd/system.conf
+echo "DefaultLimitNOFILE=256000" >> /etc/systemd/user.conf
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session-noninteractive
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/common-session
+echo 'session required pam_limits.so' | tee -a /etc/pam.d/runuser-l
 
-## Increafe vzdump size
+## Set ulimit for the shell user
+cd ~ && echo "ulimit -n 256000" >> .bashrc ; echo "ulimit -n 256000" >> .profile
+
+
+## Increase vzdump size
 cat <<'EOF' >> /etc/vzdump.conf
 
 #
