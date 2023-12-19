@@ -119,9 +119,6 @@ sed -i -e "s/\# KSM_SLEEP_MSEC=.*/KSM_SLEEP_MSEC=${KSM_SLEEP_MSEC}/g" /etc/ksmtu
 systemctl enable ksmtuned
 
 
-
-
-
 ## Detect AMD EPYC and Ryzen CPU and Apply Fixes
 if [ "$(grep -i -m 1 "model name" /proc/cpuinfo | grep -i "EPYC")" != "" ]; then
   echo "AMD EPYC detected"
@@ -146,10 +143,12 @@ if [ "${XS_AMDFIXES,,}" == "yes" ] ; then
     /usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install pve-kernel-5.15
 fi
 
+## Set Hostname
+hostnamectl set-hostname $HOSTNAME
 
 
-## Disable portmapper / rpcbind (security)	
-systemctl disable rpcbind	
+## Disable portmapper / rpcbind (security)  
+systemctl disable rpcbind 
 systemctl stop rpcbind
 
 ## Set Timezone to UTC and enable NTP
