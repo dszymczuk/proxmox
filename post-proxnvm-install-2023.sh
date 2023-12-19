@@ -25,6 +25,7 @@ echo -e "Acquire::ForceIPv4 \"true\";\\n" > /etc/apt/apt.conf.d/99-xs-force-ipv4
 # disable enterprise proxmox repo
 if [ -f /etc/apt/sources.list.d/pve-enterprise.list ]; then
   sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/pve-enterprise.list
+  sed -i "s/^deb/#deb/g" /etc/apt/sources.list.d/ceph.list
 fi
 # enable free public proxmox repo
 if [ ! -f /etc/apt/sources.list.d/proxmox.list ] && [ ! -f /etc/apt/sources.list.d/pve-public-repo.list ] && [ ! -f /etc/apt/sources.list.d/pve-install-repo.list ] ; then
