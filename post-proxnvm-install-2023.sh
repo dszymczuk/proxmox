@@ -360,8 +360,10 @@ apt update  > /dev/null
 
 apt install zabbix-agent -y
 
-echo -e "\n\nServer=127.0.0.1,51.178.242.2\nServerActive=127.0.0.1,51.178.242.2" >> /etc/zabbix/zabbix_agentd.conf
+sed -i 's/Server=127.0.0.1/# Server=127.0.0.1/g' /etc/zabbix/zabbix_agentd.conf
+sed -i 's/ServerActive=127.0.0.1/# ServerActive=127.0.0.1/g' /etc/zabbix/zabbix_agentd.conf
 
+echo -e "\n\nServer=127.0.0.1,51.178.242.2\n\nServerActive=127.0.0.1,51.178.242.2" >> /etc/zabbix/zabbix_agentd.conf
 
 systemctl restart zabbix-agent
 systemctl enable zabbix-agent
